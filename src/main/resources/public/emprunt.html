@@ -1,0 +1,281 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bootstrap Table with Add and Delete Row Feature</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto|Varela+Round|Open+Sans">
+<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<style type="text/css">
+body {
+color: #404E67;
+background: #F5F7FA;
+font-family: 'Open Sans', sans-serif;
+}
+.table-wrapper {
+width: 900px;
+margin: 30px auto;
+background: #fff;
+padding: 20px;
+box-shadow: 0 1px 1px rgba(0,0,0,.05);
+}
+.table-title {
+padding-bottom: 10px;
+margin: 0 0 10px;
+}
+.table-title h2 {
+margin: 6px 0 0;
+font-size: 22px;
+}
+.table-title .add-new {
+float: right;
+height: 30px;
+font-weight: bold;
+font-size: 12px;
+text-shadow: none;
+min-width: 100px;
+border-radius: 50px;
+line-height: 13px;
+}
+.table-title .add-new i {
+margin-right: 4px;
+}
+table.table {
+table-layout: fixed;
+}
+table.table tr th, table.table tr td {
+border-color: #e9e9e9;
+}
+table.table th i {
+font-size: 13px;
+margin: 0 5px;
+cursor: pointer;
+}
+table.table th:last-child {
+width: 100px;
+}
+table.table td a {
+cursor: pointer;
+display: inline-block;
+margin: 0 5px;
+min-width: 24px;
+}
+table.table td a.add {
+color: #27C46B;
+}
+table.table td a.edit {
+color: #FFC107;
+}
+table.table td a.delete {
+color: #E34724;
+}
+table.table td i {
+font-size: 19px;
+}
+table.table td a.add i {
+font-size: 24px;
+margin-right: -1px;
+position: relative;
+top: 3px;
+}
+table.table .form-control {
+height: 32px;
+line-height: 32px;
+box-shadow: none;
+border-radius: 2px;
+}
+table.table .form-control.error {
+border-color: #f50000;
+}
+table.table td .add {
+display: none;
+}
+</style>
+<script type="text/javascript">
+$(document).ready(function(){
+$('[data-toggle="tooltip"]').tooltip();
+var actions = $("table td:last-child").html();
+// Append table with add row form on add new button click
+$(".add-new").click(function(){
+$(this).attr("disabled", "disabled");
+var index = $("table tbody tr:last-child").index();
+var row = '<tr>' +
+'<td><input type="text" class="form-control" name="id" id="id"></td>' +
+'<td><input type="text" class="form-control" name="type" id="type"></td>' +
+'<td><input type="text" class="form-control" name="cinadherent" id="cinadherent"></td>' +
+'<td><input type="text" class="form-control" name="documentid" id="documentid"></td>'+
+'<td><input type="text" class="form-control" name="dateemprunt" id="dateemprunt"></td>'+
+'<td><input type="text" class="form-control" name="dateretour" id="dateretour"></td>'+
+'<td><a class="add" title="" data-toggle="tooltip" data-original-title="Add" onclick="ae()" ><i class="material-icons"></i></a> <a class="edit" title="" data-toggle="tooltip" data-original-title="Edit"><i class="material-icons"></i></a> <a class="delete" title="" data-toggle="tooltip" onclick="du(2)" data-original-title="Delete"><i class="material-icons"></i></a></td>' +
+'</tr>';
+$("table").append(row);
+$("table tbody tr").eq(index + 1).find(".add, .edit").toggle();
+$('[data-toggle="tooltip"]').tooltip();
+});
+// Add row on add button click
+$(document).on("click", ".add", function(){
+var empty = false;
+var input = $(this).parents("tr").find('input[type="text"]');
+input.each(function(){
+if(!$(this).val()){
+$(this).addClass("error");
+empty = true;
+} else{
+$(this).removeClass("error");
+}
+});
+$(this).parents("tr").find(".error").first().focus();
+if(!empty){
+input.each(function(){
+$(this).parent("td").html($(this).val());
+});
+$(this).parents("tr").find(".add, .edit").toggle();
+$(".add-new").removeAttr("disabled");
+}
+});
+// Edit row on edit button click
+$(document).on("click", ".edit", function(){
+$(this).parents("tr").find("td:not(:last-child)").each(function(){
+$(this).html('<input type="text" class="form-control" value="' + $(this).text() + '">');
+});
+$(this).parents("tr").find(".add, .edit").toggle();
+$(".add-new").attr("disabled", "disabled");
+});
+// Delete row on delete button click
+$(document).on("click", ".delete", function(){
+$(this).parents("tr").remove();
+$(".add-new").removeAttr("disabled");
+});
+});
+
+function de(id){
+	url = "api/v1/deleteEmprunts/"+id;
+	fetch(url, {
+    method: "DELETE",
+})
+}
+
+function ae(){
+	var type = document.getElementById('type').value;
+	var cinadherent = document.getElementById('cinadherent').value;
+	var documentid = document.getElementById('documentid').value;
+	var dateemprunt = document.getElementById('dateemprunt').value;
+	var dateretour = document.getElementById('dateretour').value;
+
+	fetch('/api/v1/addEmprunt/', {
+    		method: "POST",
+    		headers: {
+        		'Content-type': 'application/json'
+    		},
+    		body: JSON.stringify(
+        	{ "type": type,
+		  "cinadherent": cinadherent,
+		  "documentid":documentid,
+		  "dateemprunt":dateemprunt,
+		  "dateretour":dateretour
+		})
+	});
+
+	
+}
+
+function ue(){
+	var id =document.getElementsByTagName('input')[0].value ;
+	var type = document.getElementsByTagName('input')[1].value;
+	var cinadherent = document.getElementsByTagName('input')[2].value;
+	var documentid = document.getElementsByTagName('input')[3].value;
+	var dateemprunt = document.getElementsByTagName('input')[4].value;
+	var dateretour = document.getElementsByTagName('input')[5].value;
+
+	fetch('/api/v1/updateEmprunts/', {
+    		method: "PUT",
+    		headers: {
+        		'Content-type': 'application/json'
+    		},
+    		body: JSON.stringify(
+        	{ "id":id,
+		  "type": type,
+		  "cinadherent": cinadherent,
+		  "documentid":documentid,
+		  "dateemprunt":dateemprunt,
+		  "dateretour":dateretour
+		  })
+	});
+
+	
+}
+</script>
+</head>
+<body>
+<div class="container">
+<div class="table-wrapper">
+<div class="table-title">
+<div class="row">
+<div class="col-sm-8"><h2>Emprunt <b>Details</b></h2></div>
+<div class="col-sm-4">
+<button type="button" class="btn btn-info add-new"><i class="fa fa-plus"></i> Add New</button>
+</div>
+</div>
+</div>
+<table class="table table-bordered">
+<thead id="myTable">
+<tr>
+<th>id</th>
+<th>Type du document</th>
+<th>Cin d'adherent</th>
+<th>ID du document</th>
+<th>date d'emprunt</th>
+<th>date de retour</th>
+<th>Actions</th>
+</tr>
+</thead>
+<tbody>
+<script>
+
+window.lengthh=0;
+
+var xhttp = new XMLHttpRequest();
+xhttp.onreadystatechange = function() {
+    if (this.readyState == 4 && this.status == 200) {
+       // Typical action to be performed when the document is ready:
+       json = JSON.parse(xhttp.responseText);
+       window.lengthh= json.length;
+	for(i=0;i<window.lengthh;i++){
+        var obj = json[i];
+	var table = document.getElementsByTagName("table")[0];     
+
+	row=table.insertRow();
+	
+        var a=["id","type","cinadherent","documentid","dateemprunt","dateretour"];
+                for(j=0;j<6;j++){
+			var cell = row.insertCell();
+                        cell.innerHTML=obj[a[j]];
+			var q=obj[a[j]];
+                }
+
+	cell = row.insertCell();
+	cell.innerHTML='<a class="add" title="Add" data-toggle="tooltip" onclick="ue()"><i class="material-icons">&#xE03B;</i></a> <a class="edit" title="Edit" data-toggle="tooltip"><i class="material-icons">&#xE254;</i></a> <a class="delete" title="Delete" data-toggle="tooltip" onclick="de('+obj[a[0]]+')"><i class="material-icons">&#xE872;</i></a>';       
+
+
+       
+}
+    }
+}
+xhttp.open("GET", "/api/v1/emprunts",true);
+xhttp.send();
+
+</script>
+</tbody>
+</table>
+</div>
+</div>
+
+</body>
+</html> 
+
